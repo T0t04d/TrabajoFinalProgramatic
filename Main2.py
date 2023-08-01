@@ -3,12 +3,15 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import ttk
 
+#Lectura del archivo.
 df = pd.read_csv("afa_2015_2022_spa.csv")
 
+#Funcion que devuelve un diccionario con los dias y la cantidad de partidos que hubo por cada uno.
 from datetime import datetime
+
 def queDiaJugo(lista):
-    days = {'Lunes':0, 'Martes':0, 'Miercoles':0, 'Jueves':0, 'viernes':0, 'Sabado':0, 'Domingo':0}
     day = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'viernes', 'Sabado', 'Domingo']
+    days = {'Lunes':0, 'Martes':0, 'Miercoles':0, 'Jueves':0, 'viernes':0, 'Sabado':0, 'Domingo':0}
     for x in lista:
         d = datetime.strptime(str(x), "%Y-%m-%d %H:%M:%S")
         days[day[d.weekday()]] = days[day[d.weekday()]]+1    
@@ -16,17 +19,31 @@ def queDiaJugo(lista):
 
 
 ### RIVER BOCA SOLO DOMINGOS
+# Queriamos saber si efectivamente los Boca-River se jugaban todos los domingos.
 def p0():
     
+    # Comenzamos generando dataFrame que contuviera solo los partidos jugados entre boca y river.
     ByR = df[((df['equipo_local'] == 'River Plate') | (df['equipo_local'] == 'Boca Juniors')) & ((df['equipo_visitante'] == 'River Plate') | (df['equipo_visitante'] == 'Boca Juniors'))].sort_values('fecha_encuentro')
+    
+    # Luego generamos una serie con todas las fecha de encuentro que tuvieron.
     lista_fechas_ByR = ByR['fecha_encuentro']
     #print(lista_fechas_ByR)
     
-    diasJugados = pd.Series(queDiaJugo(lista_fechas_ByR))
-    diasJugados.plot(kind='barh')
+    # Creamos un dataFrame a base del diccionario de dias que jugaron.
+
+    diasJugados = pd.DataFrame({'Dias':queDiaJugo(lista_fechas_ByR).keys(), 'cantidad':queDiaJugo(lista_fechas_ByR).values()})
+    print(diasJugados)
+    
+    # Lo mostramos como un grafico de 
+    plt.subplot(211)
+    plt.plot(diasJugados['Dias'], diasJugados['cantidad'])
+    plt.subplot(212)
+    plt.pie(diasJugados['cantidad'][diasJugados['cantidad']>0],autopct='%1.1f%%',labels=diasJugados['Dias'][diasJugados['cantidad']>0])
     plt.show()
+    
 ### RIVER BOCA SOLO DOMINGOS
 
+# Esta funcion nos devuelve los valores en formato valor mas su porcentaje del total.
 def make_autopct(values):
     def my_autopct(pct):
         total = sum(values)
@@ -34,25 +51,40 @@ def make_autopct(values):
         return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
     return my_autopct
 
-### Sigue importando la localia del equipo?
+### Sigue importando la localia del equipo? Nos preguntamos que tanta incidencia tiene jugar como local.
+# La tendencia ira en descenso a lo largo del tiempo?
 def p1():
+    
     # LOCALES
+    # Comenzamos almacenando los datos de los equipos jugando como locales.
+    # Para trabajar mas comodo decidimos agregar una columna mas al dataFrame, donde nos mostrara el año en que se jugo.
+    # pasamos todas las fechas a una lista.
     dfaux = df['fecha_encuentro'].tolist()
+    # Luego de eso modificamos los Strings para quedarnos con las fechas.
     for x in range(len(dfaux)):
         dfaux[x] = str(dfaux[x])[0:4]
+    # Generamos una serie a base de esa lista.
     dfaux = pd.Series(dfaux)
+    # Le agregamos nombre
     dfaux.name = 'Año jugado'    
+    # Y hacemos un dataFrame con la nueva columna ('Año jugado).
     dfLoV = df.join(dfaux, how='outer')
-     # Agregue fechas en lugares especificos, ya que los datos de 'fecha_encuentro' no existian
+     # Agregue fechas en lugares especificos, ya que los datos de 'fecha_encuentro' no existian.
     dfLoV.iloc[104,34] = '2015'
     dfLoV.iloc[329,34] = '2015'
     dfLoV.iloc[1595,34] = '2018'
      # *****
+    
     print(dfLoV[['Año jugado','fecha_encuentro','torneo','resultado']].to_string())
     ##aro = dfLoV[(dfLoV['Año jugado']== 'nan')]
     ##print(aro[['Año jugado','fecha_encuentro','torneo','resultado']])
+    
+    # Almacenamos datos de nuestro data frame agrupados por los equipos que jugaron de local y contamos sus resultados.
     resultados_local = dfLoV.groupby('equipo_local')['resultado'].value_counts()
     print(resultados_local)
+    
+    # Procedemos a ver si se encuentra algun outlier. Lo tomamos de la siguiente manera: En los locales
+    # hay algun equipo que este teniendo mas victorias, derrotas o empates que el resto? 
     Q1 = resultados_local.quantile(0.25)
     Q3 = resultados_local.quantile(0.75)
     IQR = Q3 - Q1
@@ -61,26 +93,37 @@ def p1():
     bI = (Q1 - 1.5 *IQR)
 
     ubicacionOutliers = (resultados_local < bI) | (resultados_local > bS)
-
+    # Agrupamos los resultados de los equipos que jugaron de local.
     Lganados = (df['resultado'] == 'L').sum()
     Lperdidos = (df['resultado'] == 'V').sum()
     Lempate = (df['resultado'] == 'E').sum()
     outliersL = df[df['resultado']=='L'].groupby('equipo_local')['resultado'].value_counts()[ubicacionOutliers].sum()
     outliersV = df[df['resultado']=='V'].groupby('equipo_local')['resultado'].value_counts()[ubicacionOutliers].sum()
     outliersE = df[df['resultado']=='E'].groupby('equipo_local')['resultado'].value_counts()[ubicacionOutliers].sum()
+    
     print(f"Locales ganados: {Lganados}")
     print(f"Locales perdidos: {Lperdidos}")
     print(f"Locales empatados: {Lempate}")
     print(f"Outlaiers Ganados: {outliersL}")
     print(f"Outlaiers perdidos: {outliersV}")
     print(f"Outlaiers empatados: {outliersE}")
+    # Ya que encontramos que solo existen outliers en los partidos ganados por locales, los restamos de la cuenta para
+    # datos mas precisos.
     Lganados = int(Lganados-outliersL)
+    
     print("\n")
+    # Mostramos quienes son los equipos que resultan atipicos en alguno de sus resultados.
+    print(resultados_local[ubicacionOutliers])
     plt.boxplot(resultados_local,vert=False)
     plt.show()
+    
     ### VISITANTE
+    # Ahora haremos lo mismo pero con los visitantes: almacenando los datos de los equipos jugando como visitantes.
+    # Creamos una serie que agrupe los equipos visitantes y cuente sus resultados.
     resultados_visitante = df.groupby('equipo_visitante')['resultado'].value_counts()
     #print(resultados_visitante)
+    
+    # Busamos si hay algun outlier.
     Q1 = resultados_visitante.quantile(0.25)
     Q3 = resultados_visitante.quantile(0.75)
     IQR = Q3 - Q1
@@ -89,8 +132,10 @@ def p1():
     bI = (Q1 - 1.5 *IQR)
 
     ubicacionOutliers = (resultados_visitante < bI) | (resultados_visitante > bS)
-    resultados_visitante = resultados_visitante[ubicacionOutliers]
+    # En vista de que no lo encontramos seguiremos normalemente.
+    print(resultados_visitante[ubicacionOutliers])
 
+    # Agrupamos las Victorias, Derrotas y empates de los equipos jugando como visitante.
     Vperdidos = (df['resultado'] == 'L').sum()
     Vganados = (df['resultado'] == 'V').sum()
     Vempate = (df['resultado'] == 'E').sum()
@@ -105,25 +150,26 @@ def p1():
     print(f"Outlaiers ganados: {outliersV}")
     print(f"Outlaiers empatados: {outliersE}")
 
-
-
-    #R = pd.Series({'Perdidos':Vperdidos, 'Ganados':Vganados, 'Empate':Vempate})
+    # Visualizamos la cantidad de victorias como visitantes y como locales con un grafico de torta.
     Comparativa_visitante_local = pd.Series({'Locales ganados':Lganados, 'Visitantes ganados':Vganados})
-    #R.plot(kind='pie',label=f'Partidos jugados de visitante: {Vperdidos+Vganados+Vempate}', autopct='%1.1f%%')
-    #plt.figure(figsize=plt.figaspect(1))
     Comparativa_visitante_local.plot(kind='pie',label=f'Partidos jugados de visitante: {Vganados+Lganados}',autopct=make_autopct([Vganados,Lganados]))
-    #plt.pie([Vganados,Lganados],labels=['Visitante','Local'],autopct=make_autopct([Vganados,Lganados]))
     plt.show()
+    
+    # Usamos el dataFrame que hicimos anteriormente para visualizar los resultados a lo largo del tiempo.
     agrupacion = dfLoV.groupby('Año jugado')['resultado'].value_counts()
     agrupacion.plot(kind='bar',color=['#FFD700','#C0C0C0','#8C7853'],width=0.8,
-             figsize=(10,4),)
+             figsize=(10,4))
     plt.tight_layout()
     plt.show()
 
 ############
 
 ### Existe una relacion entre la cantidad de zurdos y el porcentaje de goles de los equipos?
+# Acaso el tener una mayor proporcion jugando a favor de un equipo afectaria los resultado?
 def p2():
+    # Para tener un mejor control de los datos generamos cuatro variables teniendo en cuenta si jugaban de local o visitante.
+    # De esta manera podriamos comprar los datos de partidos de una manera mas justa.
+    # Ademas contamos como un dato que sumaria a 'victorias_menos_zurdos_...' todas aquellas victorias en las cuales ambos equipos tuvieran la misma proporcion de zurdos.
     victorias_mas_zurdos_local = df[((df['proporcion_zurdos_local']>df['proporcion_zurdos_visitante']) & (df['resultado']=='L')) ].shape[0]
     victorias_menos_zurdos_local = df[((df['proporcion_zurdos_local']<=df['proporcion_zurdos_visitante']) & (df['resultado']=='L')) ].shape[0]
     victorias_mas_zurdos_visitante = df[((df['proporcion_zurdos_local']<df['proporcion_zurdos_visitante']) & (df['resultado']=='V')) ].shape[0]
@@ -135,8 +181,10 @@ def p2():
     print(f"Victorias dinde hubo mas zurdos de visitante: {victorias_mas_zurdos_visitante}") 
     print(f"Victorias donde hubo menos zurdos de visitante: {victorias_menos_zurdos_visitante}")
 
+    # Generamos una serie con los datos anteriores.
     gana_masOmenos_zurdos = pd.Series({'victorias mas zurdos (local)':victorias_mas_zurdos_local,'victorias menos zurdos (local)':victorias_menos_zurdos_local,'victorias mas zurdos (visitante)':victorias_mas_zurdos_visitante,'victorias menos zurdos (visitante)':victorias_menos_zurdos_visitante})
     lista_victorias=[victorias_mas_zurdos_local,victorias_menos_zurdos_local,victorias_mas_zurdos_visitante,victorias_menos_zurdos_visitante]
+    # Y con ello enseñamos los resultados con un grafico de torta.
     gana_masOmenos_zurdos.plot(kind='pie',autopct=make_autopct(lista_victorias))
     plt.show()
     
