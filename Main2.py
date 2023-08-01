@@ -34,9 +34,9 @@ def p0():
     diasJugados = pd.DataFrame({'Dias':queDiaJugo(lista_fechas_ByR).keys(), 'cantidad':queDiaJugo(lista_fechas_ByR).values()})
     print(diasJugados)
     
-    # Lo mostramos como un grafico de 
+    # Lo mostramos como un grafico de Barras junto a otro de torta.
     plt.subplot(211)
-    plt.plot(diasJugados['Dias'], diasJugados['cantidad'])
+    plt.bar(diasJugados['Dias'], diasJugados['cantidad'])
     plt.subplot(212)
     plt.pie(diasJugados['cantidad'][diasJugados['cantidad']>0],autopct='%1.1f%%',labels=diasJugados['Dias'][diasJugados['cantidad']>0])
     plt.show()
@@ -311,25 +311,26 @@ def p4():
     ####
     
 ventana = tk.Tk()
-ventana.config(width = 600, height = 350)
+ventana.config(width = 600, height = 350, bg="#2E2B2B")
 ventana.resizable(False, False)
 import tkinter.font as tkFont
-label = ttk.Label(text='CAMPEONATOS ARGENTINA 2015-2022',font=tkFont.Font(family="Lucida Grande", size=15))
-label.place(x = 130, height=50)
+label = ttk.Label(text='CAMPEONATOS ARGENTINA 2015-2022',font=tkFont.Font(family="Lucida Grande", size=18,weight='bold'),background="#2E2B2B", foreground='white')
+label.place(x = 65, height=70)
 
-boton = ttk.Button(text = "Los Boca-River se juegan solo los domingos?",command=p0)
-boton.place(x = 70, y = 80)
 
-boton1 = ttk.Button(text = "Importa la localia del equipo?", command=p1)
-boton1.place(x = 70, y = 130)
+boton = tk.Button(text = "Los Boca-River se juegan solo los domingos?",command=p0,background="#595568",activebackground="#2E2B2B",width=60,height=2)
+boton.place(x = 80, y = 80)
 
-boton2 = ttk.Button(text = "Existe una relacion entre la cantidad de zurdos y la cantidad de victorias?", command=p2)
-boton2.place(x = 70, y = 180)
+boton1 = tk.Button(text = "Importa la localia del equipo?", command=p1,background="#595568",activebackground="#2E2B2B",width=60,height=2)
+boton1.place(x = 80, y = 130)
 
-boton3 = ttk.Button(text = "Existe una relacion entre la cantidad de goles antes y despues del VAR?", command=p3)
-boton3.place(x = 70, y = 230)
+boton2 = tk.Button(text = "Existe una relacion entre la cantidad de zurdos y la cantidad de victorias?", command=p2,background="#595568",activebackground="#2E2B2B",width=60,height=2)
+boton2.place(x = 80, y = 180)
 
-boton4 = ttk.Button(text = "Existe una relacion entre la cantidad de amarillas y rojas antes y despues del VAR?", command=p4)
-boton4.place(x = 70, y = 280)
+boton3 = tk.Button(text = "Existe una relacion entre la cantidad de goles antes y despues del VAR?", command=p3,background="#595568",activebackground="#2E2B2B",width=60,height=2)
+boton3.place(x = 80, y = 230)
+
+boton4 = tk.Button(text = "Existe una relacion entre la cantidad de amarillas y rojas antes y despues del VAR?", command=p4,background="#595568",activebackground="#2E2B2B",width=60,height=2)
+boton4.place(x = 80, y = 280)
 
 ventana.mainloop()
