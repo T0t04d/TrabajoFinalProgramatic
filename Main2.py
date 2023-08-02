@@ -35,8 +35,12 @@ def p0():
     print(diasJugados)
     
     # Lo mostramos como un grafico de Barras junto a otro de torta.
+    plt.style.use('dark_background')
+    
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
     plt.subplot(211)
     plt.bar(diasJugados['Dias'], diasJugados['cantidad'])
+    plt.title("Dias de la semana Boca vs River", color='white',fontname='Impact', fontsize=30, )
     plt.subplot(212)
     plt.pie(diasJugados['cantidad'][diasJugados['cantidad']>0],autopct='%1.1f%%',labels=diasJugados['Dias'][diasJugados['cantidad']>0])
     plt.show()
@@ -54,7 +58,7 @@ def make_autopct(values):
 ### Sigue importando la localia del equipo? Nos preguntamos que tanta incidencia tiene jugar como local.
 # La tendencia ira en descenso a lo largo del tiempo?
 def p1():
-    
+    plt.style.use('dark_background')
     # LOCALES
     # Comenzamos almacenando los datos de los equipos jugando como locales.
     # Para trabajar mas comodo decidimos agregar una columna mas al dataFrame, donde nos mostrara el año en que se jugo.
@@ -114,7 +118,9 @@ def p1():
     print("\n")
     # Mostramos quienes son los equipos que resultan atipicos en alguno de sus resultados.
     print(resultados_local[ubicacionOutliers])
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
     plt.boxplot(resultados_local,vert=False)
+    
     plt.show()
     
     ### VISITANTE
@@ -151,15 +157,20 @@ def p1():
     print(f"Outlaiers empatados: {outliersE}")
 
     # Visualizamos la cantidad de victorias como visitantes y como locales con un grafico de torta.
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
+    colores = ['orange', 'blue']
     Comparativa_visitante_local = pd.Series({'Locales ganados':Lganados, 'Visitantes ganados':Vganados})
-    Comparativa_visitante_local.plot(kind='pie',label=f'Partidos jugados de visitante: {Vganados+Lganados}',autopct=make_autopct([Vganados,Lganados]))
+    Comparativa_visitante_local.plot(kind='pie',label=f'Partidos jugados de visitante: {Vganados+Lganados}', autopct=make_autopct([Vganados,Lganados]))
+    
     plt.show()
     
     # Usamos el dataFrame que hicimos anteriormente para visualizar los resultados a lo largo del tiempo.
     agrupacion = dfLoV.groupby('Año jugado')['resultado'].value_counts()
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
     agrupacion.plot(kind='bar',color=['#FFD700','#C0C0C0','#8C7853'],width=0.8,
              figsize=(10,4))
     plt.tight_layout()
+    
     plt.show()
 
 ############
@@ -186,6 +197,8 @@ def p2():
     lista_victorias=[victorias_mas_zurdos_local,victorias_menos_zurdos_local,victorias_mas_zurdos_visitante,victorias_menos_zurdos_visitante]
     # Y con ello enseñamos los resultados con un grafico de torta.
     gana_masOmenos_zurdos.plot(kind='pie',autopct=make_autopct(lista_victorias))
+    plt.style.use('dark_background')
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
     plt.show()
     
     
@@ -206,8 +219,9 @@ def p3():
     total_goles.sort_values(by='torneo', inplace=True)
 
     # Crear el gráfico de líneas
-    plt.figure(figsize=(10, 6))
-    plt.plot(total_goles['torneo'], total_goles['promedio_goles_totales'], marker='o', linestyle='-', color='r')
+    plt.style.use('dark_background')
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
+    plt.plot(total_goles['torneo'], total_goles['promedio_goles_totales'], marker='+', linestyle='-', color='r')
     plt.xlabel('Torneo')
     plt.ylabel('Promedio de goles totales por partido')
     plt.title('Promedio de goles totales por campeonato (orden personalizado)')
@@ -254,7 +268,8 @@ def p4():
     promedio_total_amarillas.sort_values(by='torneo', inplace=True)
 
     # Crear el gráfico de líneas
-    plt.figure(figsize=(10, 6))
+    plt.style.use('dark_background')
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
     plt.plot(promedio_total_amarillas['torneo'], promedio_total_amarillas['promedio_amarillas_totales'], marker='o', linestyle='-', color='r')
     plt.xlabel('Torneo')
     plt.ylabel('Promedio de Amarillas totales por partido')
@@ -295,7 +310,8 @@ def p4():
     promedio_total_rojas.sort_values(by='torneo', inplace=True)
 
     # Crear el gráfico de líneas
-    plt.figure(figsize=(10, 6))
+    plt.style.use('dark_background')
+    plt.figure(figsize=(10, 6), facecolor='#37474f')
     plt.plot(promedio_total_rojas['torneo'], promedio_total_rojas['promedio_rojas_totales'], marker='o', linestyle='-', color='r')
     plt.xlabel('Torneo')
     plt.ylabel('Promedio de Rojas totales por partido')
